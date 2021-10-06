@@ -5,10 +5,10 @@ varying vec3 normal;
 varying vec3 position;
 varying vec4 screenposition;
 uniform mat4 cmatrix,pmatrix;
+
 void main() {
   normal=aNormal;
   position=aPosition;
-  screenposition=pmatrix*cmatrix*vec4(aPosition.x,-aPosition.y,aPosition.z,1.0);
-  gl_Position=screenposition;
+  gl_Position=vec4(position.x,-position.y,position.z,.5);
   
 }

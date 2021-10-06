@@ -5,15 +5,78 @@ uniform mat4 cmatrix,pmatrix;
 uniform vec3 lightlocation;
 uniform float lightintensity;
 uniform vec3 cameralocation;
+uniform float camerafar;
+uniform float cameranear;
 uniform  float lightradius;
 uniform vec3 diffusecolor;
 uniform float fresnel;
 uniform vec3 ambient;
+uniform float random;
+uniform sampler2D sampler;
+uniform sampler2D sampler2;
+uniform sampler2D presampler;
+uniform float radius;
+uniform float strength;
+uniform float time;
+uniform float bias;
+uniform float bias2;
+uniform mat4 finalmat;
 varying vec3 normal;
 varying vec3 position;
-bool detectshadow(){
+varying vec4 screenposition;
+const float samples=16.0;
+const vec4 bitSh = vec4(256. * 256. * 256., 256. * 256., 256., 1.);
+const vec4 bitMsk = vec4(0.,vec3(1./256.0));
+const vec4 bitShifts = vec4(1.) / bitSh;
+float unpack (vec4 color) {
+    return dot(color , bitShifts);
+}
+
+float rand(vec2 xy,float seed){
+    return fract(sin(dot(xy, vec2(12.9898,78.233))*seed) * 43758.5453);
+}
+vec3 ao(vec3 a){
+  vec3 dp;float amount=0.0;float samplecount;//统计采样到的点
+  vec2 uv=vec2(gl_FragCoord.x/iResolution.x,2.0-gl_FragCoord.y/iResolution.y)*.5;
+  //float pz=texture2D(sampler,uv).w;//取像素的depth
+  float pz=unpack(texture2D(sampler,uv));
+  if(pz>0.0&&pz<1.0)
+  {
+    vec4 screennormal=cmatrix*vec4(normal.x,-normal.y,normal.z,1.0);
+    screennormal=normalize(screennormal/screennormal.w);
+    
+    vec3 viewdir=cameralocation-position;
+  // if(dot(viewdir,normal)<0.0)
+  //    return a;
+    float angle0=random*6.2831853/samples;
+    
   
-  return true;
+    for(float i=0.0;i<samples;i++){
+    float r=radius*rand(vec2(uv.x,uv.y),random+i);
+    //float angle=rand(vec2(uv.y,uv.x),time)*6.2831853;
+    float angle=angle0+i*6.2831853/samples;
+    dp.x=r*cos(angle);
+    dp.y=r*sin(angle);
+    dp.z=unpack(texture2D(sampler,vec2(uv.x+dp.x,uv.y+dp.y)));
+    vec3 dnormal=texture2D(sampler2,vec2(uv.x+dp.x,uv.y+dp.y)).xyz*2.0-vec3(1.0);
+    
+    r=r*(pz*camerafar+(1.0-pz)*cameranear)/(camerafar-cameranear);
+    float dis=(r*r+(dp.z-pz)*(dp.z-pz));
+    //float dis=dpx*dpx+dpy*dpy+dpz*dpz;
+    if(dp.z<1.0&&dp.z>0.0&&dot(screennormal.xyz,normalize(vec3(dp.x,dp.y,dp.z-pz)))>bias&&dot(normal,dnormal)<1.0-bias2){
+      amount+=(.05/dis);
+      samplecount++;
+      //amount+=(1.0-dot(normal,dnormal))*strength/dis;
+      //amount+=(1.0-dot(normal,dnormal))/(.1+dis);
+    }
+    }
+    
+  }
+  amount=amount*strength/samples;
+  //gl_FragColor=vec4(vec3(pz),1.0);
+  return a*(1.0-amount);
+  //return a*dot(viewdir,normal);
+  //gl_FragColor=vec4(vec3(1.0-amount),1.0);
 }
 void main(){
   float lightarea=3.14*lightradius*lightradius;
@@ -37,7 +100,7 @@ void main(){
     else
     a=a*(-angle2)/(angle1+angle2);
   }
-  
+
   
   float b=0.0;//计算光泽光线
   if(dot(reallightdir,normal)>0.0&&dot(lightdir,reallightdir)>0.0&&(length(cross(lightdir,reallightdir))/length(reallightdir))<lightradius){
@@ -49,6 +112,12 @@ void main(){
   b=max(b*(1.0-fresnel2),0.0);
   vec3 diffuse=vec3(a,a,a)*diffusecolor;
   vec3 specular=vec3(b,b,b);
-  gl_FragColor=vec4(diffuse+specular+ambient.xyz*0.5,1.0);
-  //gl_FragColor=vec4(lightlocation/400.0,1.0);
+  vec3 color=diffuse+specular+ambient.xyz;
+  color=log(color+1.0);
+  //ao(color);
+  color=ao(color);
+  
+
+  gl_FragColor=vec4(color,1.0);
+  
 }
