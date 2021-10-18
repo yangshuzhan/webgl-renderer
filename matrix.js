@@ -5,7 +5,7 @@ class Vec3 {
     this.z = c;
   }
   length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    return fsqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
   add(b) {
     return new Vec3(this.x + b.x, this.y + b.y, this.z + b.z);
@@ -45,6 +45,9 @@ class Vec3 {
   dis(b) {
     return this.minus(b).length();
   }
+  proj(b){
+    return b.scale(this.dot(b)/(b.dot(b)));
+  }
 }
 function vec3(a, b, c) {
   if (arguments.length == 3) return new Vec3(a, b, c);
@@ -63,4 +66,22 @@ function array3d(x, y, z) {
     }
   }
   return p;
+}
+var buf = new ArrayBuffer(4),f32=new Float32Array(buf),u32=new Uint32Array(buf);
+ function fsqrt(x){
+   f32[0] = x;
+   u32[0]=0x1fc00000+((u32[0])>>1);//指数/2
+   let y=f32[0];
+   y=(y+x/y)*0.5;
+   y=(y+x/y)*0.5;
+   y=(y+x/y)*0.5;
+   return y;
+ }
+var seed2=Math.SQRT2;
+function frand(){
+  seed2=fraction(seed2*9973);
+  return seed2;
+}
+function fraction(a){
+  return a-~~a;
 }

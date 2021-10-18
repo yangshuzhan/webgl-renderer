@@ -10,5 +10,5 @@ varying vec4 screenposition;
 void main(){
   //gl_FragColor=vec4(normal*0.5+vec3(0.5),gl_FragCoord.z);
   vec2 uv=vec2(gl_FragCoord.x/iResolution.x,2.0-gl_FragCoord.y/iResolution.y)*.5;
-  gl_FragColor=texture2D(presampler,uv)*time/(time+1.0)+ texture2D(sampler3,uv)/(time+1.0);
+  gl_FragColor=vec4(texture2D(presampler,uv).xyz*time/(time+1.0)+ texture2D(sampler3,uv).xyz/(time+1.0),1.0);
 }

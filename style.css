@@ -3,5 +3,75 @@ html, body {
   padding: 0;
 }
 canvas {
+  position:absolute;
+  top: 0;
+  left: 0;
+  z-index: -4;
+}
+.header{
+  background-image: linear-gradient(to right,rgba(0,0,0,0),rgba(255,255,255,0.5), rgba(0,0,0,0));
+  font-family:Monospace;
+  position:relative;
+  top: 0;
+  left:0;
+  display: flex;
+  aligh-item: baseline;
+  padding: 0rem;
+  gap: 1rem;
+  opacity:0.7;
+  transition: opacity 0.3s;
+  transition-timing-function: linear;
+}
+.header:hover {
+  opacity: 1;
+  
+}
+.center{
+  width: 100%;
+  text-align: center;
+  padding: 0rem;
+}
+.link{
+  position:relative;
+  background: none;
+  border: none;
+  padding: 0.2rem 0.5rem 0.2rem 0.5rem;
+  color: rgba(0,0,0,1);
+  font-family:inherit;
+  font-size:1.5em;
+  letter-spacing: 0.1em;
+  border-style: none none solid none;
+  border-width: 1px;
+  border-color: rgba(0,0,0,0.5);
+}
+
+
+.dropdown:hover .link{
+  background-color: rgba(0,0,0,0.3);
+  color: black;
+  border-style: none none solid none;
+  border-width: 1px;
+  border-color: black;
+}
+.dropdown{
+  position:relative;
+  display: inline-block;
+}
+.dropdown-menu{
+  position:absolute;
+  font-size:1.2em;
+  left:0;
+  top: calc(100%+.25rem);
+  z-index: 1;
+  background-color:rgba(255,255,255,0.3);
+  padding:.25rem;
+  border-radius:.25rem;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,.2);
+/*   opacity: 0; */
+  display: none;
+}
+.dropdown:hover .dropdown-menu{
   display: block;
+/*   opacity: 1; */
+
 }

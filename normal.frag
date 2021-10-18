@@ -12,5 +12,5 @@ vec4 pack (float value) {
 }
 void main(){
   //gl_FragColor=vec4(normal*0.5+vec3(0.5),gl_FragCoord.z);
-  gl_FragColor=vec4(normal*0.5+0.5,1.0);
+  gl_FragColor=vec4(normal*0.5+0.5,gl_FragCoord.z);
 }

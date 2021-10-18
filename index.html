@@ -1,15 +1,60 @@
 <!DOCTYPE html><html lang="en"><head>
     <script src="p5.js"></script>
     <script src="p5.sound.min.js"></script>
+    
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8">
 
   </head>
   <body>
+    
+    <div class="header">
+      <div class="center">
+        <div class="dropdown">
+          <button class="link">Load</button>
+          <div class="dropdown-menu">
+            <p>load obj<input id="fileinput" type="file" name="load obj" accept=".obj"></p>
+
+            
+            
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="link">Material</button>
+          <div class="dropdown-menu">
+            <p>diffusecolor<input id="diffusecolor" type="color"></p>
+            <p>glossycolor<input id="glossycolor" type="color" value="#555555"></p>
+            <p>roughness<input id="roughness" type="range" min="0" max="1" step="0.01"></p>
+            <p>fresnel<input id="fresnel" type="range" min="1" max="4" step="0.01"></p>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="link">Light</button>
+          <div class="dropdown-menu">
+            <p>lightintensity<input id="lightintensity" type="range" min="0" max="99000000" value="5000000"></p>
+            <p>lightcolor<input id="lightcolor" type="color"></p>
+            <p>lightradius<input id="lightradius" type="range" min="0" max="500"></p>
+            <p>ambientcolor<input id="ambientcolor" type="color" value="#555555"></p>
+          </div>
+        </div>
+         <div class="dropdown">
+          <button class="link">Effect</button>
+          <div class="dropdown-menu">
+            <p>ao strength<input id="ao strength" type="range" min="0" max="1" step="0.01"></p>
+            <p>ao radius<input id="ao radius" type="range" min="0" max="1" step="0.01"></p>
+            <p>ao bias<input id="ao bias" type="range" min="0" max="1" step="0.01"></p>
+            <p>ao bias2<input id="ao bias2" type="range" min="0" max="1" step="0.01" value="0.1"></p>
+            <p>lighttracing<input id="lighttracing" type="checkbox"></p>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="sketch.js"></script>
     <script src="matrix.js"></script>
     <script src="raytracing.js"></script>
     <script src="grid.js"></script>
+    <script src="shader.js"></script>
+    
   
 
 </body></html>

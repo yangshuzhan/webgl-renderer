@@ -1,9 +1,15 @@
 class tri {
-  constructor(point1, point2, point3, normal) {
+  constructor(point1, point2, point3, normal1,normal2,normal3) {
     this.p1 = vec3(point1); //vec3向量
     this.p2 = vec3(point2);
     this.p3 = vec3(point3);
-
+    this.normal1=vec3(normal1);
+    this.normal2=vec3(normal2);
+    this.normal3=vec3(normal3);
+    this.ab=this.p2.minus(this.p1);
+    this.ac=this.p3.minus(this.p1);
+    this.temp=this.ab.cross(this.ac);
+    
     this.maxpoint = vec3();
     this.minpoint = vec3();
     this.maxpoint.x = max([this.p1.x, this.p2.x, this.p3.x]);
@@ -16,16 +22,15 @@ class tri {
     this.center = this.maxpoint.add(this.minpoint).dividenum(2);
     //  console.log('center=',this.center)
     this.radius = this.center.dis(this.maxpoint);
-    if (normal instanceof vec3) this.normal = normal;
-    else {
-      this.normal = this.p2.minus(this.p1).cross(this.p3.minus(this.p2)).norm();
-    }
+    
+    this.normal = this.p2.minus(this.p1).cross(this.p3.minus(this.p2)).norm();
+    
   }
 }
 class grid {
   constructor(model,res) {
     //计算包围盒
-    
+    //console.log(model);
     let length = model.vertices.length;
     this.maxpoint = new vec3(-9999999999, -9999999999, -9999999999);
     this.minpoint = new vec3(9999999999, 9999999999, 9999999999);
@@ -55,7 +60,7 @@ class grid {
     this.center = this.minpoint.add(this.maxpoint).dividenum(2);
     this.radius = this.center.dis(this.maxpoint);
     if(res==null){
-      this.res=Math.ceil(Math.pow(model.faces.length,0.33333333)*0.3);
+      this.res=Math.ceil(Math.pow(model.faces.length,0.33333333)*0.5);
     }//自动计算栅格数
     else{
       this.res = res;
@@ -65,6 +70,9 @@ class grid {
     this.width = (this.maxpoint.x - this.minpoint.x) / this.res;
     this.yres = ceil((this.maxpoint.y - this.minpoint.y) / this.width);
     this.zres = ceil((this.maxpoint.z - this.minpoint.z) / this.width); 
+    //为了保证格子是正方体，根据width大小设置包围盒
+    this.maxpoint.y=this.width*this.yres+this.minpoint.y;
+    this.maxpoint.z=this.width*this.zres+this.minpoint.z;
     console.log('格子',this.xres,this.yres,this.zres)
     this.cell = array3d(this.xres, this.yres , this.zres ); //三维数组用来存储三角形
     //创建triangle数组
@@ -73,7 +81,7 @@ class grid {
       this.triangles[i] = new tri(
         model.vertices[model.faces[i][0]],
         model.vertices[model.faces[i][1]],
-        model.vertices[model.faces[i][2]]
+        model.vertices[model.faces[i][2]],model.vertexNormals[model.faces[i][0]],model.vertexNormals[model.faces[i][1]],model.vertexNormals[model.faces[i][2]]
       );
       
       let maxcell = this.getcell(this.triangles[i].maxpoint); //把三角形的包围盒放进格子
@@ -90,20 +98,20 @@ class grid {
       //debugger;
     } //初始化三角形
     //console.log(this.cell);
-
+  return this
     //console.log("cell", this.cell);
   }
   getcell(position) {
     let cell = vec3();
-    cell.x = floor(
+    cell.x = Math.floor(
       (position.x - this.minpoint.x) /
         ((this.maxpoint.x - this.minpoint.x) / this.xres)
     );
-    cell.y = floor(
+    cell.y = Math.floor(
       (position.y - this.minpoint.y) /
         ((this.maxpoint.y - this.minpoint.y) / this.yres)
     );
-    cell.z = floor(
+    cell.z = Math.floor(
       (position.z - this.minpoint.z) /
         ((this.maxpoint.z - this.minpoint.z) / this.zres)
     );
@@ -111,45 +119,66 @@ class grid {
     //防止有点落在盒子边上从而数组越界
     if(cell.x==this.xres)
       cell.x--;
+    else if(cell.x==-1)
+      cell.x++;
     if(cell.y==this.yres)
       cell.y--;
+    else if(cell.y==-1)
+      cell.y++
     if(cell.z==this.zres)
       cell.z--;
+    else if(cell.z==-1)
+      cell.z++;
     //console.log(cell)
+    
     return cell;
   }
 }
 
 function tracegrid(origin, raydir, grid) {
+  let o;
+  debugger
   if (
-    origin.x < grid.maxpoint.x &&
-    origin.y < grid.maxpoint.y &&
-    origin.z < grid.maxpoint.z &&
-    origin.x > grid.minpoint.x &&
-    origin.y > grid.minpoint.y &&
-    origin.z > grid.minpoint.z
+    origin.x <= grid.maxpoint.x &&
+    origin.y <= grid.maxpoint.y &&
+    origin.z <= grid.maxpoint.z &&
+    origin.x >= grid.minpoint.x &&
+    origin.y >= grid.minpoint.y &&
+    origin.z >= grid.minpoint.z
   ) {
-    console.log("在格子里");
-    
+    //console.log("在格子里");
+    o=origin;
   }
-  let o = rayboxintersect(origin, raydir, grid.minpoint, grid.maxpoint);
-  if (o == false) {
+  else{
+    
+    o = rayboxintersect(origin, raydir, grid.minpoint, grid.maxpoint);
+    if (o == false) {
     //console.log('不与盒子相交')
     return false;
   }
-  else if(o==true){
-    o=origin;
   }
-//方向怎么不对
+
   let o2 = o.minus(grid.minpoint);//o2相对于grid的坐标
   let tx, ty, tz, dtx, dty, dtz, t;
-  tx = (grid.width - o2.x) / raydir.x; //o表示什么
-  ty = (grid.width - o2.y) / raydir.y;
-  tz = (grid.width - o2.z) / raydir.z;
-  dtx = grid.width / abs(raydir.x);
-  dty = grid.width / abs(raydir.y);
-  dtz = grid.width / abs(raydir.z);
+  
   let index = grid.getcell(o);
+  if(raydir.x>0)
+  tx = ((index.x+1)*grid.width - o2.x) / raydir.x; //o表示什么
+  else
+    tx = ((index.x)*grid.width - o2.x) / raydir.x;
+  if(raydir.y>0)
+  ty = ((index.y+1)*grid.width - o2.y) / raydir.y;
+  else
+  ty = ((index.y)*grid.width - o2.y) / raydir.y;
+    if(raydir.z>0)
+  tz = ((index.z+1)*grid.width - o2.z) / raydir.z;
+  else
+  tz = ((index.z)*grid.width - o2.z) / raydir.z;
+    
+  dtx = grid.width / Math.abs(raydir.x);
+  dty = grid.width / Math.abs(raydir.y);
+  dtz = grid.width / Math.abs(raydir.z);
+  
   
   //let index=vec3();
   while (
@@ -200,5 +229,6 @@ function tracegrid(origin, raydir, grid) {
         index.z--;
     }
   }
+  debugger
   return false;
 }
