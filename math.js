@@ -85,3 +85,29 @@ function frand(){
 function fraction(a){
   return a-~~a;
 }
+function mat4multiply(b,a){//为什么是反的
+  let temp=new Float32Array(16);
+  for(let i=0;i<4;i++){
+    for(let j=0;j<4;j++){
+      temp[i*4+j]=a[i*4]*b[j]+a[i*4+1]*b[j+4]+a[i*4+2]*b[j+8]+a[i*4+3]*b[j+12];
+    }
+  }
+  return temp;
+}
+
+function* halton(k){
+let n=k,step=1/k,arr=[0],num=0;
+  while(true){
+    for(let i=0;k*i<n;i++){
+      let temp=arr[i]+step;
+      arr.push(temp);
+      yield temp;
+    }
+    step+=step;
+    if(step>=k/n){
+      n*=k;
+      step=1/n;
+    }
+    num=0;
+  }
+} 

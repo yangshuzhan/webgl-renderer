@@ -22,21 +22,21 @@ function initShaders(gl, vshader, fshader) {
     console.log("Failed to create program");
     return false;
   }
-
   return program;
 }
+
 function useShader(program) {
   gl.useProgram(program);
   aPosition = gl.getAttribLocation(program, "aPosition");
   aNormal = gl.getAttribLocation(program, "aNormal");
-  setuniform("cameramatrix", this._renderer._curCamera.cameraMatrix.mat4);
-  setuniform("projmatrix", this._renderer._curCamera.projMatrix.mat4);
+  setuniform("projcameramatrix", mat4multiply(this._renderer._curCamera.projMatrix.mat4,this._renderer._curCamera.cameraMatrix.mat4));
   setuniform("cameralocation", [
     this._renderer._curCamera.eyeX,
     this._renderer._curCamera.eyeY,
     this._renderer._curCamera.eyeZ,
   ]);
-  setuniform("random", Math.random());
+  
+  setuniform("randoms", [generator.next().value,generator2.next().value,generator3.next().value]);
   setuniform("roughness", Number(roughness.value));
   setuniform("bias", Number(bias.value));
   setuniform("time", time);
@@ -44,9 +44,13 @@ function useShader(program) {
   setuniform("lightintensity", Number(lightintensity.value));
   setuniform("glossycolor", torgb(glossycolor.value));
   setuniform("diffusecolor", torgb(diffusecolor.value));
-  setuniform("light1", [t.p1.x, t.p1.y, t.p1.z]);
-  setuniform("light2", [t.p2.x, t.p2.y, t.p2.z]);
-  setuniform("light3", [t.p3.x, t.p3.y, t.p3.z]);
+
+  setuniform("trianglelight.position[0]", [t.p1.x, t.p1.y, t.p1.z]);
+  setuniform("trianglelight.position[1]", [t.p2.x, t.p2.y, t.p2.z]);
+  setuniform("trianglelight.position[2]", [t.p3.x, t.p3.y, t.p3.z]);
+  setuniform("trianglelight.a", [t.a.x, t.a.y, t.a.z]);
+  setuniform("trianglelight.b", [t.b.x, t.b.y, t.b.z]);
+  setuniform("trianglelight.normal", [t.normal.x, t.normal.y, t.normal.z]);
   u_Sampler = gl.getUniformLocation(program, "u_Sampler");
   gl.uniform1i(u_Sampler, 0);
   Sampler = gl.getUniformLocation(program, "Sampler");
@@ -135,10 +139,10 @@ function loadshader(gl, type, source) {
   return shader;
 }
 
-let vertexBuffer;
+//let vertexBuffer;
 function setupBuffers(array) {
   array.vertexBuffer = gl.createBuffer();
-  console.log(gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE));
+  //console.log(gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE));
   gl.bindBuffer(gl.ARRAY_BUFFER, array.vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(array), gl.STATIC_DRAW);
 }
@@ -146,7 +150,7 @@ function setupBuffers(array) {
 let ARRAY;
 function drawtriangles(array, framebuffer) {
   if (array.vertexBuffer == null) {
-    ARRAY = array;
+    //ARRAY = array;
     setupBuffers(array);
   }
   gl.bindBuffer(gl.ARRAY_BUFFER, array.vertexBuffer);
@@ -158,7 +162,6 @@ function drawtriangles(array, framebuffer) {
   
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   if (framebuffer != null) {
-    gl.enable(gl.blend);//有点问题
     gl.framebufferTexture2D(
       gl.FRAMEBUFFER,
       gl.COLOR_ATTACHMENT0,

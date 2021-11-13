@@ -86,11 +86,14 @@ function loadObj(string, resize) {
 
   if (resize == true) {
     //点统计完了缩放坐标
+    let center=maxpoint.add(minpoint).scale(0.5);
     let scale = 300 / maxpoint.dis(minpoint);
     for (let i = 0; i < array.length; i += 6) {
-      for(let j=0;j<3;j++){
-        array[i+j]*=scale;
-      }
+      
+        array[i]=(array[i]-center.x)*scale;
+        array[i+1]=(array[i+1]-center.y)*scale;
+        array[i+2]=(array[i+2]-center.z)*scale;
+      
     }
   }
   return array;

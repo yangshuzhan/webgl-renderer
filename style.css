@@ -75,3 +75,7 @@ canvas {
 /*   opacity: 1; */
 
 }
+.fps{
+  color: red;
+  position:absolute;
+}
