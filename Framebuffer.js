@@ -1,8 +1,8 @@
-function createFramebuffer(){
+function createFramebuffer(i){
   let framebuffer=gl.createFramebuffer();
   let texture=gl.createTexture();
   framebuffer.texture=texture;
-  gl.activeTexture(gl.TEXTURE1);//有问题
+  gl.activeTexture(eval('gl.TEXTURE'+i));//有问题
   gl.bindTexture(gl.TEXTURE_2D,framebuffer.texture);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.drawingBufferWidth,gl.drawingBufferHeight,0,gl.RGBA,gl.FLOAT,null);
   
@@ -40,6 +40,8 @@ function rendertocanvas(){
   drawtriangles(t2);
 }
 function clearframebuffer(){
+  gl.clearColor(ambientcolor._array[0]*ambientintensity.value,ambientcolor._array[1]*ambientintensity.value,ambientcolor._array[2]*ambientintensity.value,1);
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 }

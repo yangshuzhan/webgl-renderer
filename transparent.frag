@@ -87,11 +87,15 @@ void main(){
   vec3 diffusedir=random3D(vec3(rand.xy,1.0),normal);
   //intersection=intersect(position,diffusedir);
   //b=diffusecolor*intersection*lightintensity;
-  // vec3 dnormal=normalize(viewdir+lightdir);
-  // vec3 refractdir=refract(-viewdir,dnormal,1.0-f0);
-  // intersection=intersect(position,refractdir);
-  b=diffusecolor*ambientintensity*lookuptex(diffusedir);
-
+  vec3 dnormal=normalize(viewdir+lightdir);
+  vec3 refractdir=refract(-viewdir,dnormal,1.0-f0);
+  intersection=intersect(position,refractdir);
+  if(intersection==0.0){
+    b=diffusecolor*ambientintensity*lookuptex(refractdir);
+  }
+  else b=diffusecolor*intersection*lightintensity;
+  
+  
 
   
   
@@ -115,8 +119,7 @@ void main(){
   //b=vec3(length(cross(l2-l1,l3-l1))*averagecosa);
   
   float intensity=dot(a123,one)-3.1415927;//表示这点的光强
-  b+=diffusecolor*(intensity*averagecosa*lightintensity);
-  
+  //b+=diffusecolor*(intensity*averagecosa*lightintensity);
   //gl_FragColor=vec4((1.0-1.0/((a+b)*lightintensity+1.0)),1.0/time);
   
   gl_FragColor=vec4(mix(b,a,fresnel),1.0/time);

@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head>
-    <script src="p5.js"></script>
+    <script src="p5.min.js"></script>
     
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8">
@@ -15,6 +15,7 @@
           <div class="dropdown-menu">
             <p>load obj<input id="fileinput" type="file" name="load obj" accept=".obj"></p>
             <p>lock camera<input id="lockcamera" type="checkbox" checked="true"></p>
+            <button class="link">saveimage</button>
           </div>
         </div>
         <div class="dropdown">
@@ -23,7 +24,8 @@
             <p>diffusecolor<input id="diffusecolor" type="color" value="#070505"></p>
             <p>glossycolor<input id="glossycolor" type="color" value="#555555"></p>
             <p>roughness<input id="roughness" type="range" min="0" max="1" step="0.01" value="0.1"></p>
-            <p>fresnel<input id="fresnel" type="range" min="1" max="4" step="0.01"></p>
+            <p>fresnel<input id="fresnel" type="range" min="0" max="1" step="0.01"></p>
+            <p>transparent<input id="transparent" type="checkbox" checked="true"></p>
           </div>
         </div>
         <div class="dropdown">
@@ -32,7 +34,7 @@
             <p>lightintensity<input id="lightintensity" type="range" min="0" max="9" step="0.01" value="1"></p>
             <p>lightcolor<input id="lightcolor" type="color"></p>
             <p>lightradius<input id="lightradius" type="range" min="0" max="500"></p>
-            <p>ambientcolor<input id="ambientcolor" type="color" value="#555555"></p>
+            <p>ambientintensity<input id="ambientintensity" type="range" value="0.5" min="0" max="2" step="0.01"></p>
           </div>
         </div>
          <div class="dropdown">
@@ -57,6 +59,7 @@
     <script src="geometry.js"></script>
     <script src="color.js"></script>
      <script src="shaders.js"></script>
+     <script src="sampling.js"></script>
   
 
 </body></html>

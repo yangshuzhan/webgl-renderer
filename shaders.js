@@ -36,12 +36,15 @@ function useShader(program) {
     this._renderer._curCamera.eyeZ,
   ]);
   
-  setuniform("randoms", [generator.next().value,generator2.next().value,generator3.next().value]);
+  setuniform("randoms", randoms);
+  //setuniform("randoms", [Math.random(),Math.random(),Math.random()]);
   setuniform("roughness", Number(roughness.value));
   setuniform("bias", Number(bias.value));
   setuniform("time", time);
+  setuniform("f0", Number(fresnel.value));
   setuniform("iResolution", [width, height]);
   setuniform("lightintensity", Number(lightintensity.value));
+  setuniform("ambientintensity", Number(ambientintensity.value));
   setuniform("glossycolor", torgb(glossycolor.value));
   setuniform("diffusecolor", torgb(diffusecolor.value));
 
@@ -51,10 +54,14 @@ function useShader(program) {
   setuniform("trianglelight.a", [t.a.x, t.a.y, t.a.z]);
   setuniform("trianglelight.b", [t.b.x, t.b.y, t.b.z]);
   setuniform("trianglelight.normal", [t.normal.x, t.normal.y, t.normal.z]);
-  u_Sampler = gl.getUniformLocation(program, "u_Sampler");
-  gl.uniform1i(u_Sampler, 0);
-  Sampler = gl.getUniformLocation(program, "Sampler");
+  let u_Sampler = gl.getUniformLocation(program, "u_Sampler");
+  gl.uniform1f(u_Sampler, 0);
+  let Sampler = gl.getUniformLocation(program, "Sampler");
   gl.uniform1i(Sampler, 1);
+  let world_Sampler = gl.getUniformLocation(program, "world_Sampler");
+  gl.uniform1i(world_Sampler, 2);
+  let bloom_Sampler = gl.getUniformLocation(program, "bloom_Sampler");
+  gl.uniform1i(bloom_Sampler, 3);
   function setuniform(name, value) {
     let location = gl.getUniformLocation(program, name);
     if (value.length == 16) gl.uniformMatrix4fv(location, false, value);

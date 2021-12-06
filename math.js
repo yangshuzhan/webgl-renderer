@@ -95,19 +95,3 @@ function mat4multiply(b,a){//为什么是反的
   return temp;
 }
 
-function* halton(k){
-let n=k,step=1/k,arr=[0],num=0;
-  while(true){
-    for(let i=0;k*i<n;i++){
-      let temp=arr[i]+step;
-      arr.push(temp);
-      yield temp;
-    }
-    step+=step;
-    if(step>=k/n){
-      n*=k;
-      step=1/n;
-    }
-    num=0;
-  }
-} 

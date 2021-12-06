@@ -2,20 +2,34 @@
 function setup() {
   frameRate(60)
   canvas=createCanvas(windowWidth,windowHeight,WEBGL);
+  pixelDensity(1);
+  console.log(displayDensity())
   gl=canvas.GL;
   gl.getExtension('OES_texture_float');
   gl.getExtension('EXT_disjoint_timer_query');
+  gl.getExtension('OES_texture_float_linear');
+  gl.getExtension('WEBGL_color_buffer_float');
+  gl.getExtension('EXT_float_blend');
   ext = gl.getExtension('EXT_disjoint_timer_query');
-  //console.log(ext)
+  //console.log(gl.getSupportedExtensions());
   query =null;
   
-  framebuffer=createFramebuffer();
+  framebuffer=createFramebuffer(1);
+  bloommap=createFramebuffer(3);
   gl.enable(gl.BLEND);
   gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, 1, 1);
+  
+  createnoise(128);//生成一张噪声纹理
+  //createworld();
+  ambientcolor=color(255)
+  loadImage('cityenvironment.jpg',world=>createworld(world));
   
   b=readshader('point.vert','point.frag');
   a=readshader('default.vert','default.frag');
   c=readshader('canvas.vert','canvas.frag');
+  transparentshader=readshader('default.vert','transparent.frag');
+  bloom=readshader('default.vert','bloom.frag');
+  backface=readshader('default.vert','backface.frag');
   arr=loadObj(getfromurl('teapot.obj'),true);
   
   let file=document.getElementById('fileinput');
@@ -42,7 +56,8 @@ function setup() {
   //drawFrame();
   setcamera()
 }
-let t,time=1,generator;
+let t,time=1;
+const samples=64;
 function draw() { 
   
   //background(0);
@@ -50,16 +65,27 @@ function draw() {
     //console.log([this._renderer._curCamera.eyeX,this._renderer._curCamera.eyeY,this._renderer._curCamera.eyeZ,])
     generator=halton(2);
     generator2=halton(3);
-    generator3=halton(5);
+    generator3=hammersley(samples/16);
+    sam=stratify(generator,generator3,4);
     clearframebuffer();
   }
-  //randomnumber=generator.next().value;
-  //randomnumber=generator.next().value;
+  randoms=sam();
+  randoms.push(generator2())
+  //randoms=[Math.random(),Math.random(),Math.random()];
   if(lockcamera.checked==false)
     orbitControl();
   
-  useShader(a)
-  //drawtriangles(arr);
+  if(transparent.checked==false)
+    useShader(a)
+  else{
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.FRONT);
+    useShader(backface);
+    //drawtriangles(arr,null);
+    gl.disable(gl.CULL_FACE);
+    useShader(transparentshader);
+  }
+
   
   if(query==null){
     query =ext.createQueryEXT();
@@ -71,15 +97,17 @@ function draw() {
     drawtriangles(arr,framebuffer);
   }
   
-  
-  useShader(b)
+  useShader(b);
   drawtriangles(t.array,framebuffer);
+  
+  useShader(bloom);
+  drawtriangles(t2,bloommap);
   //savecanvas();
   rendertocanvas();
   //useShader(b)
   //drawpoints(arr)
   time++;
-  if(time>50)
+  if(time>samples)
   noLoop();
   if (query) {
   let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);

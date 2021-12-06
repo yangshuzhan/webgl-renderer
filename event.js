@@ -3,6 +3,7 @@ function windowResized(){
   gl.deleteFramebuffer(framebuffer);
   framebuffer=createFramebuffer();
   time=1;
+  setcamera()
   loop()
 }
 function mouseDragged(){
@@ -20,7 +21,11 @@ async function handleFiles() {
   //console.log(loadObj(temp));
   
   arr=loadObj(temp,true);
+  time=1;
   loop()
   //gl.deleteBuffer(vertexBuffer);
   //vertexBuffer=null;
+}
+transparent.onchanged=function(){
+  
 }
