@@ -8,14 +8,14 @@
   <body>
     
     <div class="header">
-      <div class="fps">fps: <span id="fps"></span></div>
+      <div class="fps">fps: <span id="latency"></span></div>
       <div class="center">
         <div class="dropdown">
           <button class="link">Load</button>
           <div class="dropdown-menu">
-            <p>load obj<input id="fileinput" type="file" name="load obj" accept=".obj"></p>
-            <p>lock camera<input id="lockcamera" type="checkbox" checked="true"></p>
-            <button class="link">saveimage</button>
+            <label for="fileinput" class="custom-file-upload"><input id="fileinput" type="file" name="load obj" accept=".obj">load obj</label>
+            <p>lock camera<input id="lockcamera" type="checkbox" checked="false"></p>
+            <button class="drawer" onclick="saveCanvas('canvas','png')">saveimage</button>
           </div>
         </div>
         <div class="dropdown">
@@ -42,7 +42,7 @@
           <div class="dropdown-menu">
             <p>ao strength<input id="ao strength" type="range" min="0" max="1" step="0.01"></p>
             <p>ao radius<input id="ao radius" type="range" min="0" max="1" step="0.01"></p>
-            <p>bias<input id="bias" type="range" min="0" max="10" step="0.01" value="2"></p>
+            <p>bias<input id="bias" type="range" min="0" max="2" step="0.01" value="1"></p>
             <p>ao bias2<input id="ao bias2" type="range" min="0" max="1" step="0.01" value="0.1"></p>
             <p>lighttracing<input id="lighttracing" type="checkbox"></p>
           </div>

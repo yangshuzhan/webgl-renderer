@@ -49,7 +49,7 @@ float intersect(vec3 origin, vec3 raydir) {
 }
 vec3 lookuptex(vec3 lightdir){
     vec2 worlduv;
-    worlduv.x=atan(lightdir.x/lightdir.z)/6.2832+0.5*sign(lightdir.z);
+    worlduv.x=atan(lightdir.x/lightdir.z)/6.2832+0.25*sign(lightdir.z);
     worlduv.y=-acos(lightdir.y)/3.1415927;
   
   return texture2D(world_Sampler,worlduv).xyz;

@@ -62,6 +62,8 @@ function useShader(program) {
   gl.uniform1i(world_Sampler, 2);
   let bloom_Sampler = gl.getUniformLocation(program, "bloom_Sampler");
   gl.uniform1i(bloom_Sampler, 3);
+  let back_Sampler = gl.getUniformLocation(program, "back_Sampler");
+  gl.uniform1i(back_Sampler, 4);
   function setuniform(name, value) {
     let location = gl.getUniformLocation(program, name);
     if (value.length == 16) gl.uniformMatrix4fv(location, false, value);

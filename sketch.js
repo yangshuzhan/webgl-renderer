@@ -16,19 +16,20 @@ function setup() {
   
   framebuffer=createFramebuffer(1);
   bloommap=createFramebuffer(3);
+  backmap=createFramebuffer(4);
   gl.enable(gl.BLEND);
   gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, 1, 1);
   
   createnoise(128);//生成一张噪声纹理
   //createworld();
   ambientcolor=color(255)
-  loadImage('cityenvironment.jpg',world=>createworld(world));
+  loadImage('studio.jpg',world=>createworld(world));
   
   b=readshader('point.vert','point.frag');
   a=readshader('default.vert','default.frag');
   c=readshader('canvas.vert','canvas.frag');
   transparentshader=readshader('default.vert','transparent.frag');
-  bloom=readshader('default.vert','bloom.frag');
+  bloom=readshader('canvas.vert','bloom.frag');
   backface=readshader('default.vert','backface.frag');
   arr=loadObj(getfromurl('teapot.obj'),true);
   
@@ -76,13 +77,18 @@ function draw() {
     orbitControl();
   
   if(transparent.checked==false)
-    useShader(a)
+    useShader(a);
   else{
+    if(time==1){
+      gl.bindFramebuffer(gl.FRAMEBUFFER, backmap);//每次清空背面
+    gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.FRONT);
     useShader(backface);
-    //drawtriangles(arr,null);
+    drawtriangles(arr,backmap);
     gl.disable(gl.CULL_FACE);
+    }
+    
     useShader(transparentshader);
   }
 
@@ -99,7 +105,7 @@ function draw() {
   
   useShader(b);
   drawtriangles(t.array,framebuffer);
-  
+  debugger
   useShader(bloom);
   drawtriangles(t2,bloommap);
   //savecanvas();

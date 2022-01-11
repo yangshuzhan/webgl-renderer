@@ -1,8 +1,10 @@
 function windowResized(){  
+  time=1;
   resizeCanvas(windowWidth, windowHeight);
   gl.deleteFramebuffer(framebuffer);
-  framebuffer=createFramebuffer();
-  time=1;
+  framebuffer=createFramebuffer(1);
+  bloommap=createFramebuffer(3);
+  
   setcamera()
   loop()
 }
@@ -25,7 +27,4 @@ async function handleFiles() {
   loop()
   //gl.deleteBuffer(vertexBuffer);
   //vertexBuffer=null;
-}
-transparent.onchanged=function(){
-  
 }
