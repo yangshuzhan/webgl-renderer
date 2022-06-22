@@ -125,6 +125,6 @@ void main(){
   }
   else b=diffusecolor*intersection*lightintensity;
   
-  //gl_FragColor=vec4(texture2D(back_Sampler,uv2).xyz,1.0);
+  //gl_FragColor=vec4(vec3(abs(dot(viewdir,normal))),1.0);
   gl_FragColor=vec4(mix(b,a,fresnel),1.0/time);
 }

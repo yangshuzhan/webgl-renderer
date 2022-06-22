@@ -39,8 +39,12 @@ function rendertocanvas(){
   useShader(c);
   drawtriangles(t2);
 }
-function clearframebuffer(){
+function clearframebuffer(framebuffer,color){
+ if(color==null)
   gl.clearColor(ambientcolor._array[0]*ambientintensity.value,ambientcolor._array[1]*ambientintensity.value,ambientcolor._array[2]*ambientintensity.value,1);
+  else{
+    gl.clearColor(0,0,0,color);
+  }
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);

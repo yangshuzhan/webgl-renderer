@@ -1,10 +1,12 @@
 function windowResized(){  
-  time=1;
+  
   resizeCanvas(windowWidth, windowHeight);
   gl.deleteFramebuffer(framebuffer);
   framebuffer=createFramebuffer(1);
   bloommap=createFramebuffer(3);
-  
+  backmap=createFramebuffer(4);
+  photonmap=createFramebuffer(5);
+  time=1;
   setcamera()
   loop()
 }
@@ -22,9 +24,12 @@ async function handleFiles() {
   const temp=await fileList[0].text();
   //console.log(loadObj(temp));
   
-  arr=loadObj(temp,true);
+  currentmodel=loadObj(temp,true);
+  arr=currentmodel.arr;
+  grid=new Grid(currentmodel)
+  
   time=1;
-  loop()
+  loop();
   //gl.deleteBuffer(vertexBuffer);
   //vertexBuffer=null;
 }

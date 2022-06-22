@@ -29,6 +29,7 @@ function useShader(program) {
   gl.useProgram(program);
   aPosition = gl.getAttribLocation(program, "aPosition");
   aNormal = gl.getAttribLocation(program, "aNormal");
+  aColor = gl.getAttribLocation(program, "aColor");
   setuniform("projcameramatrix", mat4multiply(this._renderer._curCamera.projMatrix.mat4,this._renderer._curCamera.cameraMatrix.mat4));
   setuniform("cameralocation", [
     this._renderer._curCamera.eyeX,
@@ -41,7 +42,10 @@ function useShader(program) {
   setuniform("roughness", Number(roughness.value));
   setuniform("bias", Number(bias.value));
   setuniform("time", time);
+  setuniform("photonstotal", total);
   setuniform("f0", Number(fresnel.value));
+  setuniform("photoncount", photoncount);
+  
   setuniform("iResolution", [width, height]);
   setuniform("lightintensity", Number(lightintensity.value));
   setuniform("ambientintensity", Number(ambientintensity.value));
@@ -53,7 +57,7 @@ function useShader(program) {
   setuniform("trianglelight.position[2]", [t.p3.x, t.p3.y, t.p3.z]);
   setuniform("trianglelight.a", [t.a.x, t.a.y, t.a.z]);
   setuniform("trianglelight.b", [t.b.x, t.b.y, t.b.z]);
-  setuniform("trianglelight.normal", [t.normal.x, t.normal.y, t.normal.z]);
+  setuniform("trianglelight.normal", [t.temp.x, t.temp.y, t.temp.z]);//未归一化的normal
   let u_Sampler = gl.getUniformLocation(program, "u_Sampler");
   gl.uniform1f(u_Sampler, 0);
   let Sampler = gl.getUniformLocation(program, "Sampler");
@@ -64,6 +68,8 @@ function useShader(program) {
   gl.uniform1i(bloom_Sampler, 3);
   let back_Sampler = gl.getUniformLocation(program, "back_Sampler");
   gl.uniform1i(back_Sampler, 4);
+  let photon_Sampler = gl.getUniformLocation(program, "photon_Sampler");
+  gl.uniform1i(photon_Sampler, 5);
   function setuniform(name, value) {
     let location = gl.getUniformLocation(program, name);
     if (value.length == 16) gl.uniformMatrix4fv(location, false, value);
@@ -183,15 +189,29 @@ function drawtriangles(array, framebuffer) {
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, framebuffer.depthBuffer);
   }
   gl.drawArrays(gl.TRIANGLES, 0, array.length / 3);
-
 }
-function drawpoints(array) {
-  if (array.vertexBuffer == null) {
+
+function drawpoints(array,framebuffer) {
     setupBuffers(array);
-    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 24, 0);
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 36, 0);
     gl.enableVertexAttribArray(aPosition);
-    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 24, 12);
+    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 36, 12);
     gl.enableVertexAttribArray(aNormal);
+    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 36, 24);
+    gl.enableVertexAttribArray(aColor);
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  if (framebuffer != null) {
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      framebuffer.texture,
+      0
+    );
+    gl.bindRenderbuffer(gl.RENDERBUFFER, framebuffer.depthBuffer);
+    
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, framebuffer.depthBuffer);
   }
   gl.drawArrays(gl.POINTS, 0, array.length / 3);
 }

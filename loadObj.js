@@ -1,3 +1,11 @@
+class models{
+  constructor(){
+    this.arr=[];
+    this.faces=[];
+    this.vertices=[];
+    this.normals=[];
+  }
+}
 function loadObj(string, resize) {
   let points = [],
     faces = [],
@@ -89,14 +97,25 @@ function loadObj(string, resize) {
     let center=maxpoint.add(minpoint).scale(0.5);
     let scale = 300 / maxpoint.dis(minpoint);
     for (let i = 0; i < array.length; i += 6) {
-      
         array[i]=(array[i]-center.x)*scale;
         array[i+1]=(array[i+1]-center.y)*scale;
         array[i+2]=(array[i+2]-center.z)*scale;
-      
     }
   }
-  return array;
+  //array的结构为 x,y,z,normalx,normaly,normalz;
+  //把数据放进模型类里;
+  let mod=new models();
+  mod.arr=array;
+  for(let i=0;i<array.length;i+=18){//加18 是因为顶点之间插了法线数据
+    mod.vertices.push(vec3(array[i],array[i+1],array[i+2]));
+    mod.normals.push(vec3(array[i+3],array[i+4],array[i+5]));
+    mod.vertices.push(vec3(array[i+6],array[i+7],array[i+8]));
+    mod.normals.push(vec3(array[i+9],array[i+10],array[i+11]));
+    mod.vertices.push(vec3(array[i+12],array[i+13],array[i+14]));
+    mod.normals.push(vec3(array[i+15],array[i+16],array[i+17]));
+    mod.faces.push([i,i+1,i+2]);//为了兼容obj的api，实际并不需要faces
+  }
+  return mod;
 }
 function getfromurl(url) {
   var request = new XMLHttpRequest();

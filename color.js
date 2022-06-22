@@ -47,7 +47,7 @@ function createnoise(n) {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, n, n, 0, gl.RGB, gl.FLOAT, img);
   return img;
   function toarray(x,y){
-    return (y*n+x)*3
+    return (y*n+x)*3;
   }
   function toxy(i){
     let x=floor(i/3)%n;
@@ -64,7 +64,6 @@ function createworld(img) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   //gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB, gl.RGB, gl.UNSIGNED_BYTE,img.canvas);
-
   let r = 0,
     g = 0,
     b = 0;
@@ -77,7 +76,6 @@ function createworld(img) {
   r = r / 20 / 3;
   g = g / 20 / 3;
   b = b / 20 / 3;
-  //console.log(r,g,b)
   ambientcolor = color(r, g, b);
   gl.clearColor(...ambientcolor._array);
   time = 1;
