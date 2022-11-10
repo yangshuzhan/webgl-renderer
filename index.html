@@ -1,50 +1,62 @@
-<!DOCTYPE html><html lang="en"><head>
-    <script src="p5.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     
     <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
 
   </head>
   <body>
-    
+    <body>
     <div class="header">
       <div class="fps">latency: <span id="fps"></span></div>
       <div class="center">
         <div class="dropdown">
           <button class="link">Load</button>
           <div class="dropdown-menu">
-            <label for="fileinput" class="custom-file-upload"><input id="fileinput" type="file" name="load obj" accept=".obj">load obj</label>
-            <p>lock camera<input id="lockcamera" type="checkbox"></p>
+            <label for="fileinput" class="custom-file-upload"><input id="fileinput" type="file" name="load obj" accept=".obj,.mtl" multiple/>load obj</label>
+            <p>lock camera<input id = "lockcamera" type="checkbox" onclick="checkCamera()"></p>
             <button class="drawer" onclick="saveCanvas('canvas','png')">saveimage</button>
           </div>
         </div>
         <div class="dropdown">
           <button class="link">Material</button>
           <div class="dropdown-menu">
-            <p>diffusecolor<input id="diffusecolor" type="color" value="#070505"></p>
-            <p>glossycolor<input id="glossycolor" type="color" value="#555555"></p>
-            <p>roughness<input id="roughness" type="range" min="0" max="1" step="0.01" value="0.1"></p>
-            <p>fresnel<input id="fresnel" type="range" min="0" max="1" step="0.01"></p>
-            <p>transparent<input id="transparent" type="checkbox" checked="true"></p>
+            <p>material:
+<select name="cars" id="selectmaterial" onchange="selectmaterials()">
+  <option value="volvo">Volvo</option>
+  <option value="saab">Saab</option>
+  <option value="mercedes">Mercedes</option>
+  <option value="audi">Audi</option>
+</select></p>
+            <p>diffusecolor<input id = "diffusecolor" type="color" value="#555555" onchange="changediffuse()"></p>
+            <p>glossycolor<input id = "glossycolor" type="color" value = "#555555" ></p>
+            <p>roughness<input id = "roughness" type="range" min="0" max="1" step="0.01" value="0.1"></p>
+            <p>fresnel<input id = "fresnel" type="range" min="0" max="1" step="0.01"></p>
+            <p>transparent<input id = "transparent" type="checkbox" checked="true"></p>
           </div>
         </div>
         <div class="dropdown">
           <button class="link">Light</button>
           <div class="dropdown-menu">
-            <p>lightintensity<input id="lightintensity" type="range" min="0" max="9" step="0.01" value="1"></p>
-            <p>lightcolor<input id="lightcolor" type="color"></p>
-            <p>lightradius<input id="lightradius" type="range" min="0" max="5" step="0.01" value="1"></p>
-            <p>ambientintensity<input id="ambientintensity" type="range" value="0.5" min="0" max="2" step="0.01"></p>
+            <p>lightintensity<input id = "lightintensity" type="range" min="0" max="9" step="0.01" value="1"></p>
+            <p>lightcolor<input id = "lightcolor" type="color" ></p>
+            <p>lightradius<input id = "lightradius" type="range" min="0.001" max="5" step="0.01" value="1"></p>
+            <p>lightdistance<input id = "lightdistance" type="range" min="0.001" max="5" step="0.01" value="1"></p>
+            <p>lightrotation<input id = "lightrotation" type="range" min="0.001" max="6.28" step="0.01" value="0"></p>
+            <p>ambientintensity<input id = "ambientintensity" type="range" value = "0.5" min="0" max="2" step="0.01"></p>
           </div>
         </div>
          <div class="dropdown">
           <button class="link">Effect</button>
           <div class="dropdown-menu">
-            <p>ao strength<input id="ao strength" type="range" min="0" max="1" step="0.01"></p>
-            <p>ao radius<input id="ao radius" type="range" min="0" max="1" step="0.01"></p>
-            <p>bias<input id="bias" type="range" min="0" max="2" step="0.01" value="1"></p>
-            <p>ao bias2<input id="ao bias2" type="range" min="0" max="1" step="0.01" value="0.1"></p>
-            <p>lighttracing<input id="lighttracing" type="checkbox"></p>
+            <p >ao strength<input id = "ao strength" type="range" min="0" max="1" step="0.01"></p>
+            <p >ao radius<input id = "ao radius" type="range" min="0" max="1" step="0.01"></p>
+            <p >bias<input id = "bias" type="range" min="0" max="2" step="0.01" value="1"></p>
+            <p >ao bias2<input id = "ao bias2" type="range" min="0" max="1" step="0.01" value="0.1"></p>
+            <p >lighttracing<input id = "lighttracing" type="checkbox" ></p>
+            <p >infinite<input id = "infinite" type="checkbox" ></p>
           </div>
         </div>
       </div>
@@ -54,6 +66,7 @@
     <script src="orbit.js"></script>
     <script src="event.js"></script>
     <script src="math.js"></script>
+    <script src="sampling.js"></script>
     <script src="raytracing.js"></script>
     <script src="grid.js"></script>
 
@@ -63,7 +76,6 @@
     <script src="geometry.js"></script>
     <script src="color.js"></script>
      <script src="shaders.js"></script>
-     <script src="sampling.js"></script>
-  
-
-</body></html>
+     
+  </body>
+</html>

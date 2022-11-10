@@ -29,14 +29,28 @@ function useShader(program) {
   gl.useProgram(program);
   aPosition = gl.getAttribLocation(program, "aPosition");
   aNormal = gl.getAttribLocation(program, "aNormal");
+  aDepth = gl.getAttribLocation(program, "aDepth");
+  aDir = gl.getAttribLocation(program, "aDir");
   aColor = gl.getAttribLocation(program, "aColor");
+  aLength = gl.getAttribLocation(program, "aLength");
+  aSmoothnormal = gl.getAttribLocation(program, "aSmoothnormal");
+  aRoughness = gl.getAttribLocation(program, "aRoughness");
+  aRefraction = gl.getAttribLocation(program, "aRefraction");
+  //抗锯齿
+  let temp=[...this._renderer._curCamera.projMatrix.mat4],dx=0,dy=0
+  
+  dx=(randoms[0]*2-1)/width,dy=(randoms[1]*2-1)/height;
+  temp[8]+=dx;
+  temp[9]+=dy;
+  
   setuniform("projcameramatrix", mat4multiply(this._renderer._curCamera.projMatrix.mat4,this._renderer._curCamera.cameraMatrix.mat4));
+  setuniform("biasedprojcameramatrix", mat4multiply(temp,this._renderer._curCamera.cameraMatrix.mat4));
   setuniform("cameralocation", [
     this._renderer._curCamera.eyeX,
     this._renderer._curCamera.eyeY,
     this._renderer._curCamera.eyeZ,
   ]);
-  
+  cameralocation=new Vec3(this._renderer._curCamera.eyeX,this._renderer._curCamera.eyeY,this._renderer._curCamera.eyeZ)
   setuniform("randoms", randoms);
   //setuniform("randoms", [Math.random(),Math.random(),Math.random()]);
   setuniform("roughness", Number(roughness.value));
@@ -45,22 +59,22 @@ function useShader(program) {
   setuniform("photonstotal", total);
   setuniform("f0", Number(fresnel.value));
   setuniform("photoncount", photoncount);
-  
   setuniform("iResolution", [width, height]);
+  setuniform("dx", dx);
+  setuniform("dy", dy);
   setuniform("lightintensity", Number(lightintensity.value));
   setuniform("ambientintensity", Number(ambientintensity.value));
   setuniform("glossycolor", torgb(glossycolor.value));
   setuniform("diffusecolor", torgb(diffusecolor.value));
-
   setuniform("trianglelight.position[0]", [t.p1.x, t.p1.y, t.p1.z]);
   setuniform("trianglelight.position[1]", [t.p2.x, t.p2.y, t.p2.z]);
   setuniform("trianglelight.position[2]", [t.p3.x, t.p3.y, t.p3.z]);
   setuniform("trianglelight.a", [t.a.x, t.a.y, t.a.z]);
   setuniform("trianglelight.b", [t.b.x, t.b.y, t.b.z]);
   setuniform("trianglelight.normal", [t.temp.x, t.temp.y, t.temp.z]);//未归一化的normal
-  let u_Sampler = gl.getUniformLocation(program, "u_Sampler");
+  let u_Sampler = gl.getUniformLocation(program, "u_Sampler");//噪声图
   gl.uniform1f(u_Sampler, 0);
-  let Sampler = gl.getUniformLocation(program, "Sampler");
+  let Sampler = gl.getUniformLocation(program, "Sampler");//framebuffer
   gl.uniform1i(Sampler, 1);
   let world_Sampler = gl.getUniformLocation(program, "world_Sampler");
   gl.uniform1i(world_Sampler, 2);
@@ -70,6 +84,8 @@ function useShader(program) {
   gl.uniform1i(back_Sampler, 4);
   let photon_Sampler = gl.getUniformLocation(program, "photon_Sampler");
   gl.uniform1i(photon_Sampler, 5);
+  let difference_Sampler = gl.getUniformLocation(program, "difference_Sampler");
+  gl.uniform1i(difference_Sampler, 6);
   function setuniform(name, value) {
     let location = gl.getUniformLocation(program, name);
     if (value.length == 16) gl.uniformMatrix4fv(location, false, value);
@@ -163,18 +179,22 @@ function setupBuffers(array) {
 }
 
 let ARRAY;
-function drawtriangles(array, framebuffer) {
+function drawtriangles(array, framebuffer,depth) {
   if (array.vertexBuffer == null) {
     //ARRAY = array;
     setupBuffers(array);
   }
+  let count=24
+  if(depth)
+    count=28
   gl.bindBuffer(gl.ARRAY_BUFFER, array.vertexBuffer);
   //绘制多个物体要重新绑定buffer
-  gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 24, 0);
+  gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, count, 0);
   gl.enableVertexAttribArray(aPosition);
-  gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 24, 12);
+  gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, count, 12);
   gl.enableVertexAttribArray(aNormal);
-  
+  gl.vertexAttribPointer(aDepth, 1, gl.FLOAT, false, count, 24);
+  gl.enableVertexAttribArray(aDepth);
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   if (framebuffer != null) {
     gl.framebufferTexture2D(
@@ -188,17 +208,27 @@ function drawtriangles(array, framebuffer) {
     
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, framebuffer.depthBuffer);
   }
-  gl.drawArrays(gl.TRIANGLES, 0, array.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, array.length *4/ count);
 }
 
 function drawpoints(array,framebuffer) {
     setupBuffers(array);
-    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 36, 0);
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 72, 0);
     gl.enableVertexAttribArray(aPosition);
-    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 36, 12);
+    gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 72, 12);
     gl.enableVertexAttribArray(aNormal);
-    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 36, 24);
+    gl.vertexAttribPointer(aDir, 3, gl.FLOAT, false, 72, 24);
+    gl.enableVertexAttribArray(aDir);
+    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 72, 36);
     gl.enableVertexAttribArray(aColor);
+  gl.vertexAttribPointer(aSmoothnormal, 3, gl.FLOAT, false, 72, 48);
+    gl.enableVertexAttribArray(aSmoothnormal);
+    gl.vertexAttribPointer(aLength, 1, gl.FLOAT, false, 72, 60);
+    gl.enableVertexAttribArray(aLength);
+    gl.vertexAttribPointer(aRoughness, 1, gl.FLOAT, false, 72, 64);
+    gl.enableVertexAttribArray(aRoughness);
+    gl.vertexAttribPointer(aRefraction, 1, gl.FLOAT, false, 72, 68);
+    gl.enableVertexAttribArray(aRefraction);
   
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   if (framebuffer != null) {
@@ -213,5 +243,5 @@ function drawpoints(array,framebuffer) {
     
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, framebuffer.depthBuffer);
   }
-  gl.drawArrays(gl.POINTS, 0, array.length / 3);
+  gl.drawArrays(gl.POINTS, 0, array.length / 18);
 }

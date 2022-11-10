@@ -11,8 +11,13 @@ uniform vec3 diffusecolor;
 uniform float bias;
 varying vec3 prenormal;
 varying vec3 position;
+varying vec3 refractposition;
+varying vec2 refractuv;
+varying float depth;
 uniform float time;
 uniform float f0;
+uniform float dx;//用来抗锯齿的偏移
+uniform float dy;
 uniform sampler2D u_Sampler;
 uniform sampler2D Sampler;
 uniform sampler2D world_Sampler;
@@ -26,7 +31,7 @@ struct lightinfo{
 uniform lightinfo trianglelight;
 
 vec3 rotate(vec3 a,vec3 n,float b){
-  return normalize(a*cos(b)+n*sin(b));
+  return (a*cos(b)+n*sin(b));
 }
 
 vec3 rand(vec2 uv){
@@ -43,7 +48,7 @@ vec3 random3D(vec3 r,vec3 normal){
 }
 float intersect(vec3 origin, vec3 raydir) {
   float temp=dot(trianglelight.normal,raydir);
-  if(temp>0.0){
+  if(temp<0.0){
       return 0.0;
     }
   //float temp=1.0/dot(raydir,trianglelight.normal);
@@ -65,7 +70,7 @@ void main(){
   vec3 a,b;
   vec3 normal=normalize(prenormal);
   vec3 viewdir=normalize(cameralocation-position);
-  vec2 uv=(gl_FragCoord.xy/128.0);
+  vec2 uv=gl_FragCoord.xy/128.0;
   vec3 rand=rand(uv);
   vec3 dir=random3D(rand,normal*roughness);//表示偏离向量
   vec3 lightdir=reflect(-viewdir,normal);
@@ -79,7 +84,7 @@ void main(){
   //float cosa=dot(normalize(lightdir),viewdir);
   float cosb=dot(normalize(lightdir+viewdir),viewdir);
   //float fresnel=mix(pow(1.0-cosb,5.0),1.0,f0);
-  float fresnel=(cosb*f0*f0+f0)/(cosb+f0);
+  float fresnel=(cosb*f0*f0+f0)/(cosb+f0);//透射率
   //float fresnel=(cosa+3.0)*f0/(cosa+2.0*f0+1.0);
   //光线跟踪
   float intersection=intersect(position,lightdir);
@@ -96,35 +101,27 @@ void main(){
   vec3 dnormal=normalize(viewdir+lightdir);
   vec3 refractdir=refract(-viewdir,normal,1.0-f0);//第一次折射
   vec2 uv2=gl_FragCoord.xy/iResolution;
-  //vec3 backnormal=texture2D(back_Sampler,uv2).xyz;
+  vec3 backnormal=texture2D(back_Sampler,refractuv).xyz;
+  //第二次折射
+  refractdir=refract(refractdir,-backnormal,(1.0-f0));
+  
   float angle=PI-2.0*acos(dot(refractdir,-normal));//内反射角度
   float angle2=acos(dot(refractdir,-viewdir));
-  vec3 n=normalize(-dnormal+dot(dnormal,refractdir)*refractdir);
-  float step=floor(log2(rand.x)/log2(fresnel));
-  refractdir=rotate(refractdir,n,step*angle+angle2);
+  vec3 n=normalize(-normal+dot(normal,refractdir)*refractdir);
+  float step=floor(log(rand.x)/log(fresnel));
+  refractdir=rotate(refractdir,n,step*angle);
   refractdir=mix(refractdir,-dir,roughness*(1.0+step));
-  vec3 outposition=texture2D(back_Sampler,uv2).xyz;
-  /*
-  if(rand.x>fresnel){//折射
-    //refractdir=refract(refractdir,-backnormal,1.0+f0);
-  }
-  else if(rand.x>fresnel*fresnel){
-    // vec3 backnormal=2.0*dot(-normal,refractdir)*refractdir+normal;
-    // refractdir=reflect(refractdir,backnormal);
-    refractdir=rotate(refractdir,n,angle);
-  }
-  else if(rand.x>fresnel*fresnel*fresnel){
-    refractdir=rotate(refractdir,n,2.0*angle);
-  }
-  else{
-    refractdir=rotate(refractdir,n,3.0*angle);
-  }*/
-  intersection=intersect(position,refractdir);
+  //vec3 outposition=texture2D(back_Sampler,uv2).xyz;
+  vec3 n2=normalize(-viewdir+dot(viewdir,normal)*normal);
+  
+  vec3 outposition=0.5*depth*(rotate(normal,n2,angle*step)-normal)+position;
+    
+  intersection=intersect(refractposition,refractdir);
   if(intersection==0.0){
     b=diffusecolor*ambientintensity*lookuptex(refractdir);
   }
   else b=diffusecolor*intersection*lightintensity;
   
-  //gl_FragColor=vec4(vec3(abs(dot(viewdir,normal))),1.0);
-  gl_FragColor=vec4(mix(b,a,fresnel),1.0/time);
+  //gl_FragColor=vec4(backnormal,1.0);
+  gl_FragColor=vec4(mix(b,a,fresnel),1.0);
 }

@@ -58,7 +58,8 @@ function halton(k){
   }
   return next;
 }
-function trisampling(triangle){
-  let a=Math.sqrt(Math.random()),b=Math.random();
+function trisampling(triangle,a,b){
+  //let a=Math.sqrt(Math.random()),b=Math.random();
+  a=Math.sqrt(a);
   return triangle.p1.scale(1-a).add(triangle.p2.scale(a*(1-b)).add(triangle.p3.scale((a*b))));
 }

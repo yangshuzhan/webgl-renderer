@@ -7,6 +7,7 @@ uniform sampler2D world_Sampler;
 uniform sampler2D bloom_Sampler;
 uniform sampler2D back_Sampler;
 uniform sampler2D photon_Sampler;
+uniform sampler2D difference_Sampler;
 uniform float time;
 uniform float photonstotal;
 uniform vec3 randoms;
@@ -28,13 +29,13 @@ void main(){
   //vec2 uv=gl_FragCoord.xy/iResolution*.5;
   vec2 uv=gl_FragCoord.xy/iResolution;
   vec3 color=fromLinear(saturate(texture2D(Sampler,uv).xyz));
-  vec3 photoncolor=+texture2D(photon_Sampler,uv).xyz*100.0*inversesqrt(photonstotal+1.0);
+  //vec3 photoncolor=+texture2D(photon_Sampler,uv).xyz*100.0*inversesqrt(photonstotal+1.0);
   vec2 uv2=gl_FragCoord.xy/128.0;
   vec3 rand=fract(texture2D(u_Sampler,uv2).xyz)-vec3(0.5,0.5,0.0);
-  vec3 bloom=vec3(0.0);
+  vec3 photoncolor=fromLinear(texture2D(bloom_Sampler,uv).xyz);
+  //gl_FragColor=vec4(color*(vec3(1.0)-min(photoncolor,1.0))+photoncolor,1.0);//合成有问题
+  gl_FragColor=vec4(photoncolor,1.0);//合成有问题
+  //gl_FragColor=vec4(color,1.0);//合成有问题
   
-  if(dot(texture2D(Sampler,uv+rand.xy*rand.z*0.1).xyz,vec3(1.0))>1.0){
-    bloom=vec3(1.0/(1.0+length(rand.xy))-0.4);
-  }
-  gl_FragColor=vec4(color+fromLinear(log2(photoncolor+1.0))+texture2D(bloom_Sampler,uv).xyz*(time-0.9)/time,1.0);
+  //gl_FragColor=vec4(texture2D(difference_Sampler,uv).xyz,1.0);
 }

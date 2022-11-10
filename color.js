@@ -1,8 +1,37 @@
+function normcolor(color){
+  let temp=3/(color[0]+color[1]+color[2]);
+  if(temp>1)
+    return color
+  else{
+    color[0]*=temp;
+    color[1]*=temp;
+    color[2]*=temp;
+  return color;
+  }
+}
+function doublecolor(color){
+  let temp=(color[0]+color[1]+color[2])/3;
+  color[0]*=temp*temp;
+    color[1]*=temp*temp;
+    color[2]*=temp*temp;
+  return color;
+}
 function torgb(str) {
   let a = parseInt(str[1] + str[2], 16);
   let b = parseInt(str[3] + str[4], 16);
   let c = parseInt(str[5] + str[6], 16);
   return [a / 255, b / 255, c / 255];
+}
+
+function rgbToHex(arr) {
+  return "#" + componentToHex(arr[0]) + componentToHex(arr[1]) + componentToHex(arr[2]);
+  
+  function componentToHex(c) {
+    c=Math.floor(c*255)
+  let hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
 }
 function createnoise(n) {
   
@@ -11,31 +40,6 @@ function createnoise(n) {
   let num=n*n*3;
   for (let i = 0; i <num; i += 1) {
     img[i] = Math.random();
-     // img[i+1]=(Math.random()>0.5);
-     // img[i+2]=7*(Math.random()>0.5);
-     
-      //img[i+1]=img[i];
-      //img[i+2]=img[i];
-  }
-  let t=1/100;
-  let width3=3*width
-  for(let i=0;i<100;i++){
-  for(let index=0;index<num;index++){//减小噪点的差异性
-    let error=0;
-    let matrix=[1,-1,width,-width,1+width,width-1,1-width,-1-width,-2,2,2*width,-2*width,-1-2*width,1-2*width,-1+2*width,1+2*width,-2+width,-2-width,2+width,2-width]
-  let weight=[1,1,1,1,0.5,0.5,0.5,0.5,0.3,0.3,0.3,0.3,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
-    for(let j=0;j<matrix.length;j++){
-      let temp=index+matrix[j]*3;
-      let x=temp%width3;
-      if(temp>=num)
-        temp+=-num-width3+x+x;//超出数组边界的点变换回来
-      else if(temp<0)
-        temp+=num-width3+x+x;
-      error+=Math.abs(img[index]-img[temp])*weight[j];
-    }
-    if(error<2-t*i)
-      img[index]=1-img[index];
-  }
   }
   var texture = gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
@@ -80,17 +84,25 @@ function createworld(img) {
   gl.clearColor(...ambientcolor._array);
   time = 1;
   loop();
-  let n = 20;
+
   let buffer = new Float32Array(img.width * img.height * 3);
-  for (let y = 0; y < img.height; y++) {
-    for (let x = 0; x < img.width; x++) {
-      let temp = img.get(x, y);
-      let p = (x + img.width * y) * 3;
-      buffer[p] = exp(temp[0] / 255) - 1;
-      buffer[p + 1] = exp(temp[1] / 255) - 1;
-      buffer[p + 2] = exp(temp[2] / 255) - 1;
-    }
+  
+  img.loadPixels()
+  let p=img.pixels;
+  for(let i=0,j=0;i<p.length;i+=4,j+=3){
+    buffer[j] = exp(p[i] / 255) - 1;
+    buffer[j + 1] = exp(p[i+1] / 255) - 1;
+    buffer[j + 2] = exp(p[i+2] / 255) - 1;
   }
+  // for (let y = 0; y < img.height; y++) {
+  //   for (let x = 0; x < img.width; x++) {
+  //     let temp = img.get(x, y);
+  //     let p = (x + img.width * y) * 3;
+  //     buffer[p] = exp(temp[0] / 255) - 1;
+  //     buffer[p + 1] = exp(temp[1] / 255) - 1;
+  //     buffer[p + 2] = exp(temp[2] / 255) - 1;
+  //   }
+  // }
 
   gl.texImage2D(
     gl.TEXTURE_2D,
@@ -138,6 +150,7 @@ function createworld(img) {
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,img.width,img.height,0,gl.RGB,gl.FLOAT,buffer2);
   }
   console.log(spheretonormal(...normaltosphere(1,0,0)))*/
+  
   return img;
 }
 function normaltosphere(x, y, z) {

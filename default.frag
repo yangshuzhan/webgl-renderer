@@ -37,7 +37,7 @@ vec3 random3D(vec3 r,vec3 normal){
 }
 float intersect(vec3 origin, vec3 raydir) {
   float temp=dot(trianglelight.normal,raydir);
-  if(temp>0.0){
+  if(temp<0.0){
       return 0.0;
     }
   //float temp=1.0/dot(raydir,trianglelight.normal);
@@ -59,7 +59,7 @@ void main(){
   vec3 a,b;
   vec3 normal=normalize(prenormal);
   vec3 viewdir=normalize(cameralocation-position);
-  vec2 uv=(gl_FragCoord.xy/128.0);
+  vec2 uv=gl_FragCoord.xy/128.0;
   vec3 rand=rand(uv);
   vec3 dir=random3D(rand,normal*roughness);//表示偏离向量
   vec3 lightdir=reflect(-viewdir,normal);
@@ -119,5 +119,5 @@ void main(){
   
   //gl_FragColor=vec4((1.0-1.0/((a+b)*lightintensity+1.0)),1.0/time);
   
-  gl_FragColor=vec4(mix(b,a,fresnel),1.0/time);
+  gl_FragColor=vec4(mix(b,a,fresnel),1.0);
 }
