@@ -6,7 +6,6 @@ attribute vec3 aSmoothnormal;
 attribute float aLength;
 attribute float aRoughness;
 attribute float aRefraction;
-uniform sampler2D difference_Sampler;
 uniform sampler2D back_Sampler;
 uniform sampler2D bloom_Sampler;
 uniform vec2 iResolution;
@@ -44,8 +43,8 @@ void main(){
   
   vec2 uv=(outposition.xy)/length(cameralocation-position)*0.5+0.5;
   //uv=vec2(uv.x,1.0-uv.y);
-  if(texture2D(bloom_Sampler,uv).xyz!=vec3(0.0))//在边缘处缩小半径
-    size*=1.1-dot(texture2D(difference_Sampler,uv).xyz,vec3(0.3333));
+  // if(texture2D(bloom_Sampler,uv).xyz!=vec3(0.0))//在边缘处缩小半径
+  //   size*=1.1-dot(texture2D(difference_Sampler,uv).xyz,vec3(0.3333));
   size=clamp(size,1.0,100.0);
 
   color=aColor;

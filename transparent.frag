@@ -1,5 +1,6 @@
 precision highp float;
 precision highp sampler2D;
+uniform mat4 biasedprojcameramatrix;
 uniform vec2 iResolution;
 uniform vec3 cameralocation;
 uniform vec3 randoms;
@@ -37,7 +38,7 @@ vec3 rotate(vec3 a,vec3 n,float b){
 vec3 rand(vec2 uv){
 return fract(texture2D(u_Sampler,uv).xyz+randoms);
 //return fract(texture2D(u_Sampler,uv+randoms.xy).xyz*3991.6801);
-  //return fract((fract(gl_FragCoord.x*43.112609)+fract(gl_FragCoord.y*8.7178291199))*randoms);
+//return fract((fract(gl_FragCoord.x*43.112609)+fract(gl_FragCoord.y*8.7178291199))*randoms);
 }
 vec3 random3D(vec3 r,vec3 normal){
   float z=r.x*2.0-1.0;
@@ -45,6 +46,13 @@ vec3 random3D(vec3 r,vec3 normal){
   float b=r.y*6.2831853;
   float radius=r.z;
   return (vec3(z,r1*sin(vec2(b,b+1.5707963)))+normal)*(1.0-sqrt(1.0-sqrt(radius)));
+}
+vec3 random3D2(vec3 r){
+  float z=r.x*2.0-1.0;
+  float r1=sqrt(1.0-z*z);
+  float b=r.y*6.2831853;
+  float radius=r.z;
+  return vec3(z,r1*sin(vec2(b,b+1.5707963)));
 }
 float intersect(vec3 origin, vec3 raydir) {
   float temp=dot(trianglelight.normal,raydir);
@@ -64,6 +72,22 @@ vec3 lookuptex(vec3 lightdir){
     worlduv.y=-acos(lightdir.y)/3.1415927;
   
   return texture2D(world_Sampler,worlduv).xyz;
+}
+vec3 irefract(vec3 I,vec3 N,float eta){
+  float temp=dot(N, I);
+  float k = 1.0 - eta * eta * (1.0 -temp*temp);
+    if (k < 0.0)
+        return reflect(I,N);       // or genDType(0.0)
+    else
+        return eta * I - (eta * temp + sqrt(k)) * N;
+}
+vec3 spectrum(float index){
+  if(index<0.5)
+    return vec3(1.0-2.0*index,4.0*index-1.0,0.0)*4.0;
+  else
+    return vec3(0,3.0-4.0*index,2.0*index-1.0)*4.0;
+
+
 }
 void main(){
   
@@ -99,29 +123,38 @@ void main(){
   //intersection=intersect(position,diffusedir);
   //b=diffusecolor*intersection*lightintensity;
   vec3 dnormal=normalize(viewdir+lightdir);
-  vec3 refractdir=refract(-viewdir,normal,1.0-f0);//第一次折射
-  vec2 uv2=gl_FragCoord.xy/iResolution;
-  vec3 backnormal=texture2D(back_Sampler,refractuv).xyz;
-  //第二次折射
-  refractdir=refract(refractdir,-backnormal,(1.0-f0));
+  float spectrumior=pow(f0,1.0-rand.z*0.05);
+  vec3 refractdir=refract(-viewdir,normal,1.0-spectrumior);//第一次折射
+  
+  // float tempdepth=depth*-dot(normal,refractdir);//计算uv
+  // vec3 refractposition=refractdir*tempdepth+position;
+  // vec4 temp=biasedprojcameramatrix*vec4(refractposition,1.0);
+  // vec2 refractuv=(temp.xy/temp.w*0.5+vec2(0.5));
+  
+  
+  // vec2 uv2=gl_FragCoord.xy/iResolution;
+  //vec3 backnormal=mix(texture2D(back_Sampler,refractuv).xyz,-normal,sqrt(f0));
+  vec3 backnormal=normalize(texture2D(back_Sampler,refractuv).xyz);//传递的数据不归一化会出错
+  
+  refractdir=irefract(refractdir,-backnormal,1.0/(1.0-spectrumior));//第二次折射
   
   float angle=PI-2.0*acos(dot(refractdir,-normal));//内反射角度
   float angle2=acos(dot(refractdir,-viewdir));
   vec3 n=normalize(-normal+dot(normal,refractdir)*refractdir);
   float step=floor(log(rand.x)/log(fresnel));
   refractdir=rotate(refractdir,n,step*angle);
-  refractdir=mix(refractdir,-dir,roughness*(1.0+step));
+  refractdir=mix(refractdir,random3D2(rand),roughness*(1.0+step));
   //vec3 outposition=texture2D(back_Sampler,uv2).xyz;
   vec3 n2=normalize(-viewdir+dot(viewdir,normal)*normal);
   
   vec3 outposition=0.5*depth*(rotate(normal,n2,angle*step)-normal)+position;
     
-  intersection=intersect(refractposition,refractdir);
+  intersection=intersect(outposition,refractdir);
   if(intersection==0.0){
     b=diffusecolor*ambientintensity*lookuptex(refractdir);
   }
   else b=diffusecolor*intersection*lightintensity;
-  
+  b*=spectrum(rand.z);
   //gl_FragColor=vec4(backnormal,1.0);
   gl_FragColor=vec4(mix(b,a,fresnel),1.0);
 }

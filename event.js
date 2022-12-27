@@ -14,6 +14,9 @@ function windowResized(){
   bloommap=createFramebuffer(3);
   backmap=createFramebuffer(4);
   photonmap=createFramebuffer(5);
+  differencemap=createFramebuffer(6);
+  positionmap=createFramebuffer(7);
+  
   time=1;
   setcamera()
   loop()

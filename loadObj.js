@@ -2,6 +2,7 @@ let materialtable=[['default',[0.75,0.75,0.75],1]];//名称，漫反射颜色，
 class models{
   constructor(){
     this.arr=[];
+    this.objs=[];
     this.faces=[];
     this.vertices=[];
     this.normals=[];
@@ -35,7 +36,6 @@ function loadObj(string, resize) {
         }
       }
       if(result==false){
-        
         materialtable.push([arr[1],[Math.random(),Math.random(),Math.random()],1]);
         materialcount=materialtable.length-1;
       }

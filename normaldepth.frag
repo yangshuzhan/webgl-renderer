@@ -9,9 +9,9 @@ uniform float time;
 uniform vec3 randoms;
 varying vec3 prenormal;
 varying vec3 position;
-
 void main(){
   //vec2 uv=gl_FragCoord.xy/iResolution*.5;
-  //vec3 normal=normalize(prenormal);
-  gl_FragColor=vec4(prenormal,gl_FragCoord.z);
+  vec3 normal=normalize(prenormal);
+  //gl_FragColor=vec4(normal.xy,gl_FragCoord.z,1.0);
+  gl_FragColor=vec4(position,1.0);
 }

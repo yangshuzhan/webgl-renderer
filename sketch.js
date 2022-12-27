@@ -20,6 +20,7 @@ function setup() {
   backmap=createFramebuffer(4);
   photonmap=createFramebuffer(5);
   differencemap=createFramebuffer(6);
+  positionmap=createFramebuffer(7);
   
   gl.enable(gl.BLEND);
   gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, 1, 1);
@@ -36,8 +37,9 @@ function setup() {
   transparentshader=readshader('default.vert','transparent.frag');
   photonshader=readshader('photon.vert','photon.frag');
   bloom=readshader('canvas.vert','bloom.frag');//用来混合光晕和光子
-  difference=readshader('canvas.vert','difference.frag');//用来混合光晕和光子
+  difference=readshader('default.vert','difference.frag');//用来混合光晕和光子
   backface=readshader('default.vert','backface.frag');
+  normaldepth=readshader('default.vert','normaldepth.frag');
   
   currentmodel=loadObj(getfromurl('teapot.obj'),true);
   //arr=currentmodel.arr;
@@ -51,10 +53,11 @@ function setup() {
   //setcamera(-25.90765174020619,-86.17297624556258,-227.46752438819215)
   inputmap=new Float32Array(width*height*4);
   output=new Float32Array(width*height*4);
+  
 }
 let t,time=1;
-const samples=2560;
-
+const samples=256;
+let timearray=[];
 function draw() { 
   cameralocation=new Vec3(this._renderer._curCamera.eyeX,this._renderer._curCamera.eyeY,this._renderer._curCamera.eyeZ);
   if(lockcamera.checked==false)
@@ -75,20 +78,35 @@ function draw() {
   randoms=sam();
   randoms.push(generator2());
   //randoms=[Math.random(),Math.random(),Math.random()];
+  //normaldepth
+  gl.clearColor(0, 0, 0, 0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, positionmap);//每次清空背面
+  gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+  useShader(normaldepth);
+  drawtriangles(arr,positionmap,true);
   
   if(lighttracing.checked==false)//避免与之前的图层叠加
   {
-    if(transparent.checked==false)
-    useShader(a);
+    if(transparent.checked==false){
+      // gl.bindFramebuffer(gl.FRAMEBUFFER, backmap);//每次清空背面
+      // gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+      // useShader(positionmap);
+      // drawtriangles(arr,backmap,true);
+      useShader(a);
+    }
   else{
     if(time==1){
     gl.bindFramebuffer(gl.FRAMEBUFFER, backmap);//每次清空背面
+    gl.clearDepth(0);
+    gl.depthFunc(gl.GEQUAL);//绘制得到最远处的面
     gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.FRONT);
     useShader(backface);
     drawtriangles(arr,backmap,true);
     gl.disable(gl.CULL_FACE);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clearDepth(1);
     }
     useShader(transparentshader);
   }
@@ -120,7 +138,7 @@ function draw() {
     useShader(black);//画黑色
     drawtriangles(arr,photonmap,true);//每次画个黑色底色
     useShader(backface);
-    drawtriangles(arr,backmap,true);//用于读取深度
+    drawtriangles(arr,backmap,true);//用于读取法线
     gl.blendFunc(gl.ONE, gl.ONE);
     useShader(photonshader);
     drawpoints(photons,photonmap);//画光子
@@ -163,7 +181,10 @@ function draw() {
   let disjoint = gl.getParameter(ext.GPU_DISJOINT_EXT);
   if (available&&!disjoint) {
   let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
-  fps.textContent=timeElapsed/1000000;
+    timearray.push(timeElapsed/1000000)
+    if(timearray.length>60)
+      timearray.shift()
+  fps.textContent=averageof(timearray);
 }
   if(available||disjoint){
     ext.deleteQueryEXT(query);
@@ -174,7 +195,9 @@ function draw() {
 function setcamera(){
   if(localStorage.camera){
     let temp=localStorage.camera.split(',')
-    this._renderer._curCamera.setPosition(...temp);
+    //this._renderer._curCamera.setPosition(...temp);
+    this._renderer._curCamera.setPosition(-182.68069076889316,-105.16869591805477,219.90980885603017 );
+    //this._renderer._curCamera.setPosition(-170.14 ,   -108.734, -228.084);
   }
   else
     this._renderer._curCamera.setPosition(291.3318359688469, -86.37646567228508, 21.391875407101793);

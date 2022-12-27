@@ -1,11 +1,15 @@
 
 precision highp float;
 precision highp sampler2D;
+uniform mat4 biasedprojcameramatrix;
 uniform vec2 iResolution;
-uniform sampler2D u_Sampler;
+uniform sampler2D u_Sampler;//随机数图
 uniform sampler2D Sampler;
 uniform sampler2D world_Sampler;
+uniform sampler2D back_Sampler;
+uniform sampler2D normaldepth_Sampler;
 uniform float time;
+uniform float bias;
 uniform vec3 randoms;
 //varying vec3 normal;
 uniform sampler2D photon_Sampler;
@@ -19,6 +23,13 @@ vec3 fromLinear(vec3 linearRGB)
 
     return mix(higher, lower, cutoff);
 }
+vec3 positiontoscreen(vec3 position){
+  vec4 temp=biasedprojcameramatrix*vec4(position,1.0);
+  temp.xyz/=temp.w;
+  //temp.z=sqrt(1.0-temp.x*temp.x-temp.y*temp.y);
+  return temp.xyz;
+}
+
 void main(){
   //vec2 uv=gl_FragCoord.xy/iResolution*.5;
   vec2 uv=gl_FragCoord.xy/iResolution;
@@ -33,7 +44,11 @@ void main(){
   vec3 photoncolor=texture2D(photon_Sampler,uv).xyz;
   
   vec3 basecolor=clamp(texture2D(Sampler,uv).xyz,0.0,1.0);
-  
+  vec3 p0=texture2D(normaldepth_Sampler,uv).xyz;
+  vec3 normal=clamp(vec3(p0.x,p0.y,sqrt(1.0-p0.x*p0.x-p0.y*p0.y)),0.0,1.0);
   //gl_FragDepthEXT = 0.0;
-  gl_FragColor=vec4(basecolor+bloom+photoncolor,1.0/time);
+  gl_FragColor=vec4(clamp(basecolor+bloom+photoncolor,0.0,1.0),1.0/time);
+  //gl_FragColor=vec4(texture2D(normaldepth_Sampler,uv).xyz,1.0/time);
+  
+
 }

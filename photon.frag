@@ -24,7 +24,7 @@ void main(){
   
   if(dot(raydir,normal)*dot(viewdir,normal)>=0.0&&refraction<1.0)//去掉背面的像素
     discard;
-  if(length(position-realposition.xyz)>5.0||gl_FragCoord.z>realposition.w)//去掉距离差距过大的像素
+  if(abs(gl_FragCoord.z-realposition.w)>0.1||gl_FragCoord.z>realposition.w)//去掉距离差距过大的像素
     discard;
   else
     gl_FragDepthEXT = realposition.w-0.0001;

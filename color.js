@@ -71,15 +71,17 @@ function createworld(img) {
   let r = 0,
     g = 0,
     b = 0;
-  for (let i = 0; i < 20; i++) {
-    let temp = img.get(Math.random() * img.width, Math.random() * img.height);
-    r += temp[0];
-    g += temp[1];
-    b += temp[2];
+  for (let i = 0; i < 5; i++) {
+    for(let j=0;j<5;j++){
+      let temp = img.get(i/5 * img.width, j/5 * img.height);
+      r += temp[0];
+      g += temp[1];
+      b += temp[2];
+    }
   }
-  r = r / 20 / 3;
-  g = g / 20 / 3;
-  b = b / 20 / 3;
+  r = r / 25 / 3;
+  g = g / 25 / 3;
+  b = b / 25 / 3;
   ambientcolor = color(r, g, b);
   gl.clearColor(...ambientcolor._array);
   time = 1;

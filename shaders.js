@@ -86,6 +86,8 @@ function useShader(program) {
   gl.uniform1i(photon_Sampler, 5);
   let difference_Sampler = gl.getUniformLocation(program, "difference_Sampler");
   gl.uniform1i(difference_Sampler, 6);
+  let normaldepth_Sampler = gl.getUniformLocation(program, "normaldepth_Sampler");
+  gl.uniform1i(normaldepth_Sampler, 7);
   function setuniform(name, value) {
     let location = gl.getUniformLocation(program, name);
     if (value.length == 16) gl.uniformMatrix4fv(location, false, value);
