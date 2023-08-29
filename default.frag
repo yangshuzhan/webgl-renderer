@@ -105,13 +105,13 @@ vec3 lookuptex(vec3 lightdir){
 vec3 ourbrdf(vec3 viewdir,vec3 normal,vec3 rand){
   vec3 dir=random3D(rand,normal*roughness);//表示偏离向量
   vec3 lightdir=reflect(-viewdir,normal);
-  return mix(lightdir,dir,roughness);
+  return normalize(mix(lightdir,dir,roughness));
 }
 vec3 phongbrdf(vec3 viewdir,vec3 normal,vec3 rand){
   vec3 random3d=random3D2(rand);
   vec3 lightdir=reflect(normalize(-viewdir),normal);
   vec3 dir=normalize(cross(random3d,lightdir));//沿着dir旋转
-  float n=-0.3*log(1.0-roughness)/log(5000.0);
+  float n=-0.3*log(1.0-roughness)/log(500.0);
   //float n=.01*(1.0/(1.0-roughness)-1.0);
   float cosseta=pow(rand.z,n);
   return cosseta*lightdir+(1.0-cosseta)*dot(lightdir,dir)*dir+sqrt(1.0-cosseta*cosseta)*cross(dir,lightdir);
