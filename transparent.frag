@@ -87,7 +87,7 @@ vec3 spectrum(float index){
   else
     return vec3(0,3.0-4.0*index,2.0*index-1.0)*4.0;
 
-
+//return vec3(index);
 }
 void main(){
   
@@ -123,9 +123,9 @@ void main(){
   //intersection=intersect(position,diffusedir);
   //b=diffusecolor*intersection*lightintensity;
   vec3 dnormal=normalize(viewdir+lightdir);
-  float spectrumior=pow(f0,1.0-rand.z*0.05);
+  float spectrumior=pow(f0,1.0-rand.z*0.05);//色散
+  //float spectrumior=pow(f0,1.0);
   vec3 refractdir=refract(-viewdir,normal,1.0-spectrumior);//第一次折射
-  
   // float tempdepth=depth*-dot(normal,refractdir);//计算uv
   // vec3 refractposition=refractdir*tempdepth+position;
   // vec4 temp=biasedprojcameramatrix*vec4(refractposition,1.0);
@@ -138,6 +138,7 @@ void main(){
   
   refractdir=irefract(refractdir,-backnormal,1.0/(1.0-spectrumior));//第二次折射
   
+    
   float angle=PI-2.0*acos(dot(refractdir,-normal));//内反射角度
   float angle2=acos(dot(refractdir,-viewdir));
   vec3 n=normalize(-normal+dot(normal,refractdir)*refractdir);
@@ -147,7 +148,7 @@ void main(){
   //vec3 outposition=texture2D(back_Sampler,uv2).xyz;
   vec3 n2=normalize(-viewdir+dot(viewdir,normal)*normal);
   
-  vec3 outposition=0.5*depth*(rotate(normal,n2,angle*step)-normal)+position;
+  vec3 outposition=position+0.5*depth*(rotate(normal,n2,angle*(step+1.0))-normal);
     
   intersection=intersect(outposition,refractdir);
   if(intersection==0.0){
