@@ -16,5 +16,5 @@ light tracing(metropolis)
 # Custorm Shader
 You can simply rewrite default.frag/default.frag to create your own shader.
 
-![alt text](/examples/happy2)
+![alt text](/examples/happy1.png)
 ![alt text](http://url/to/img.png)
