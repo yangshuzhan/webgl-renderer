@@ -1,12 +1,17 @@
-# webgl renderer
+# Webgl Renderer
 This is a renderer that supports opening .obj files. You can choose any marterials and render a image.
 
 # Current Feature
 The following features are supported:
+
 PBRT Materials
+
 Transparent Material
+
 Dispersion
-light tracing
+
+light tracing(metropolis)
+
 # Custorm Shader
 You can simply rewrite default.frag/default.frag to create your own shader.
 
