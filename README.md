@@ -13,6 +13,8 @@ Transparent Material
 
 Dispersion
 
+Anti-aliasing
+
 light tracing(metropolis)
 
 # Custorm Shader
