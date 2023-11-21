@@ -5,6 +5,8 @@ https://yangshuzhan.github.io/webgl-renderer/
 # Current Feature
 The following features are supported:
 
+Environmental map
+
 PBRT Materials
 
 Transparent Material
@@ -17,4 +19,4 @@ light tracing(metropolis)
 You can simply rewrite default.frag/default.frag to create your own shader.
 
 ![alt text](/examples/happy1.png)
-![alt text](http://url/to/img.png)
+![alt text](examples/QQ截图20231011212655.png)
